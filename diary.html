@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Logapriya's Glow Diary</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: radial-gradient(circle at top left, #0f0f1f, #000);
+      color: #fff;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .glow {
+      text-shadow: 0 0 10px #ffb6f9, 0 0 20px #f0c0ff;
+    }
+    .container {
+      background: rgba(20, 20, 40, 0.9);
+      padding: 20px;
+      border-radius: 15px;
+      width: 800px;
+      box-shadow: 0 0 30px #ffb6f9;
+    }
+    #main-container { display: none; }
+    .tabs {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .tabs button {
+      flex: 1;
+      margin: 5px;
+      padding: 10px;
+      background: #111;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    .tabs button.active {
+      background: #ffb6f9;
+      color: #000;
+      font-weight: bold;
+    }
+    #diary, #stats { display: none; }
+    textarea {
+      width: 100%;
+      height: 120px;
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      margin-top: 10px;
+    }
+    #entries {
+      margin-top: 15px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .entry {
+      background: linear-gradient(145deg, #f0c0ff, #ffb6f9);
+      color: #000;
+      padding: 12px;
+      border-radius: 12px;
+      margin-bottom: 12px;
+      position: relative;
+      box-shadow: 0 0 15px #ffb6f9, 0 0 25px #f0c0ff;
+    }
+    .entry-buttons {
+      position: absolute;
+      top: 5px;
+      right: 10px;
+    }
+    .entry-buttons button {
+      background: linear-gradient(90deg, #f0c0ff, #ffb6f9);
+      color: #000;
+      font-weight: bold;
+      font-size: 12px;
+      padding: 4px 8px;
+      border-radius: 5px;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 0 10px #ffb6f9;
+    }
+    .entry-buttons button:hover {
+      transform: scale(1.1);
+      box-shadow: 0 0 15px #f0c0ff, 0 0 25px #ffb6f9;
+    }
+    #emoji-picker {
+      margin-top: 5px;
+    }
+    #emoji-picker span {
+      cursor: pointer;
+      font-size: 20px;
+      margin: 3px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Login Page -->
+<div class="container" id="login-container">
+  <h2 class="glow">🔒 Login to Logapriya's Diary</h2>
+  <input type="text" id="username" placeholder="Username"><br><br>
+  <input type="password" id="password" placeholder="Password"><br><br>
+  <button onclick="login()">Login</button>
+  <p id="login-msg" style="color: red;"></p>
+</div>
+
+<!-- Main Page -->
+<div class="container" id="main-container">
+  <div class="tabs">
+    <button id="diary-tab" class="active" onclick="showTab('diary')">📝 Diary</button>
+    <button id="stats-tab" onclick="showTab('stats')">📊 Stats</button>
+    <button onclick="logout()">🚪 Logout</button>
+  </div>
+
+  <!-- Diary Tab -->
+  <div id="diary">
+    <h2>📖 Write Your Diary</h2>
+    <input type="date" id="entry-date">
+    <textarea id="diary-entry" placeholder="Write about your day..."></textarea>
+    <p id="word-count">Words: 0</p>
+
+    <!-- Emoji Picker -->
+    <div id="emoji-picker">
+      <span onclick="addEmoji('😊')">😊</span>
+      <span onclick="addEmoji('😍')">😍</span>
+      <span onclick="addEmoji('😂')">😂</span>
+      <span onclick="addEmoji('😭')">😭</span>
+      <span onclick="addEmoji('😡')">😡</span>
+      <span onclick="addEmoji('✨')">✨</span>
+      <span onclick="addEmoji('🔥')">🔥</span>
+      <span onclick="addEmoji('😴')">😴</span>
+    </div>
+
+    <button onclick="saveEntry()">Save Entry</button>
+
+    <h3>📜 Previous Entries</h3>
+    <div id="entries"></div>
+  </div>
+
+  <!-- Stats Tab -->
+  <div id="stats">
+    <h2>📊 Mood Stats</h2>
+    <p>😊 Happy: <span id="happy-count">0</span></p>
+    <p>😍 Love: <span id="love-count">0</span></p>
+    <p>😂 Funny: <span id="funny-count">0</span></p>
+    <p>😭 Sad: <span id="sad-count">0</span></p>
+    <p>😡 Angry: <span id="angry-count">0</span></p>
+    <p>✨ Sparkle: <span id="sparkle-count">0</span></p>
+    <p>🔥 Fire: <span id="fire-count">0</span></p>
+    <p>😴 Tired: <span id="tired-count">0</span></p>
+  </div>
+</div>
+
+<script>
+  const validUser = "logapriya";
+  const validPass = "priya2980";
+  let entries = [];
+
+  function login() {
+    const u = document.getElementById("username").value;
+    const p = document.getElementById("password").value;
+    if (u === validUser && p === validPass) {
+      document.getElementById("login-container").style.display = "none";
+      document.getElementById("main-container").style.display = "block";
+      showTab('diary');
+    } else {
+      document.getElementById("login-msg").innerText = "Incorrect username or password.";
+    }
+  }
+
+  function logout() {
+    document.getElementById("main-container").style.display = "none";
+    document.getElementById("login-container").style.display = "block";
+  }
+
+  function showTab(tab) {
+    document.getElementById("diary").style.display = "none";
+    document.getElementById("stats").style.display = "none";
+    document.getElementById(tab).style.display = "block";
+    document.getElementById("diary-tab").classList.remove("active");
+    document.getElementById("stats-tab").classList.remove("active");
+    document.getElementById(tab + "-tab").classList.add("active");
+  }
+
+  function saveEntry() {
+    const date = document.getElementById("entry-date").value;
+    const text = document.getElementById("diary-entry").value;
+    if (!date || !text) return alert("Please enter a date and text!");
+    const entry = { id: Date.now(), date, text };
+    entries.unshift(entry); // newest on top
+    renderEntries();
+    updateStats();
+    document.getElementById("diary-entry").value = "";
+    document.getElementById("word-count").innerText = "Words: 0";
+  }
+
+  function renderEntries() {
+    const container = document.getElementById("entries");
+    container.innerHTML = "";
+    entries.forEach(e => {
+      const div = document.createElement("div");
+      div.className = "entry";
+      div.innerHTML = `
+        <div class="entry-buttons">
+          <button onclick="editEntry(${e.id})">Edit</button>
+          <button onclick="deleteEntry(${e.id})">Delete</button>
+        </div>
+        <strong>${e.date}</strong><br>${e.text}
+      `;
+      container.appendChild(div);
+    });
+  }
+
+  function editEntry(id) {
+    const entry = entries.find(e => e.id === id);
+    if (entry) {
+      document.getElementById("entry-date").value = entry.date;
+      document.getElementById("diary-entry").value = entry.text;
+      entries = entries.filter(e => e.id !== id);
+      renderEntries();
+    }
+  }
+
+  function deleteEntry(id) {
+    entries = entries.filter(e => e.id !== id);
+    renderEntries();
+    updateStats();
+  }
+
+  function addEmoji(emoji) {
+    const textarea = document.getElementById("diary-entry");
+    textarea.value += emoji;
+    updateWordCount();
+  }
+
+  function updateWordCount() {
+    const text = document.getElementById("diary-entry").value.trim();
+    const words = text ? text.split(/\s+/).length : 0;
+    document.getElementById("word-count").innerText = "Words: " + words;
+  }
+
+  document.getElementById("diary-entry").addEventListener("input", updateWordCount);
+
+  function updateStats() {
+    let counts = { "😊":0,"😍":0,"😂":0,"😭":0,"😡":0,"✨":0,"🔥":0,"😴":0 };
+    entries.forEach(e => {
+      for (let emoji in counts) {
+        counts[emoji] += (e.text.split(emoji).length - 1);
+      }
+    });
+    document.getElementById("happy-count").innerText = counts["😊"];
+    document.getElementById("love-count").innerText = counts["😍"];
+    document.getElementById("funny-count").innerText = counts["😂"];
+    document.getElementById("sad-count").innerText = counts["😭"];
+    document.getElementById("angry-count").innerText = counts["😡"];
+    document.getElementById("sparkle-count").innerText = counts["✨"];
+    document.getElementById("fire-count").innerText = counts["🔥"];
+    document.getElementById("tired-count").innerText = counts["😴"];
+  }
+</script>
+
+</body>
+</html>
